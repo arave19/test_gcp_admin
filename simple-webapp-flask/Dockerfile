@@ -9,4 +9,5 @@ COPY app.py .
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT} --timeout 3000 app:app"]
+# CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT} --timeout 3000 app:app"]
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} --timeout 3000 app:app"]
