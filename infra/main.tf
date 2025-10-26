@@ -30,6 +30,7 @@ resource "google_artifact_registry_repository" "docker_repo" {
 resource "google_compute_security_policy" "armor_policy" {
   project = var.project
   name = "block-ip-policy"
+
   rule {
     action = "deny(403)"
     description = "Restricted ip address"
@@ -41,6 +42,7 @@ resource "google_compute_security_policy" "armor_policy" {
       }
     }
   }
+
   rule {
     action = "allow"
     priority = 2147483647
@@ -52,6 +54,7 @@ resource "google_compute_security_policy" "armor_policy" {
     }
     description = "Default allow rule"
   }
+
   depends_on = [google_project_service.compute]
 }
 
@@ -84,29 +87,45 @@ resource "google_compute_url_map" "lb_url_map" {
   default_service = google_compute_backend_service.cloud_run_backend.id
 }
 
-resource "google_compute_target_http_proxy" "http_proxy" {
-  name    = "cloud-run-http-proxy"
-  url_map = google_compute_url_map.lb_url_map.id
+resource "google_compute_managed_ssl_certificate" "lb_ssl" {
+  name = "cloud-run-lb-cert"
+
+  managed {
+    domains = ["arav-el.one"]
+  }
 }
 
-resource "google_compute_global_forwarding_rule" "http_forwarding_rule" {
-  name        = "cloud-run-forwarding-rule"
-  target      = google_compute_target_http_proxy.http_proxy.id
-  port_range  = "80"
+resource "google_compute_target_https_proxy" "https_proxy" {
+  name            = "cloud-run-https-proxy"
+  url_map         = google_compute_url_map.lb_url_map.id
+  ssl_certificates = [google_compute_managed_ssl_certificate.lb_ssl.name]
+}
+
+resource "google_compute_global_address" "lb_ip" {
+  name    = "cloud-run-lb-ip"
+  project = var.project
+}
+
+resource "google_compute_global_forwarding_rule" "https_forwarding_rule" {
+  name        = "cloud-run-https-forwarding-rule"
+  target      = google_compute_target_https_proxy.https_proxy.id
+  port_range  = "443"
   ip_protocol = "TCP"
+  ip_address  = google_compute_global_address.lb_ip.address
 }
 
+# Trigger de Cloud Build (comentado)
 # resource "google_cloudbuild_trigger" "github_push_trigger" {
 #   project  = var.project
 #   location = "global" 
 #   name = "github-master-branch-push"
 #   description = "Disparador automático que se ejecuta en cada 'push' a la rama principal."
 #   filename = "../cloudbuild.yaml" 
-
+#
 #   github {
 #     owner = var.github_repo_owner
 #     name  = var.github_repo_name
-
+#
 #     push {
 #       branch = "master" 
 #     }
