@@ -55,18 +55,19 @@ resource "google_compute_security_policy" "armor_policy" {
   depends_on = [google_project_service.compute]
 }
 
-resource "google_cloudbuild_trigger" "main_trigger" {
-  project  = var.project
-  name     = "bang-to-cloud-run-tf"
-  location = "global"
+# resource "google_cloudbuild_trigger" "github_push_trigger" {
+#   project  = var.project
+#   location = "global" 
+#   name = "github-master-branch-push"
+#   description = "Disparador automático que se ejecuta en cada 'push' a la rama principal."
+#   filename = "../cloudbuild.yaml" 
 
-  repository_event_config {
-    repository = "projects/${var.project}/locations/global/connections/${var.github_connection_name}/repositories/${var.github_repo_owner}_${var.github_repo_name}"
-    push {
-      branch = "^main$"
-    }
-  }
+#   github {
+#     owner = var.github_repo_owner
+#     name  = var.github_repo_name
 
-  filename = "cloudbuild.yaml"
-  depends_on = [google_project_service.cloudbuild]
-}
+#     push {
+#       branch = "master" 
+#     }
+#   }
+# }
