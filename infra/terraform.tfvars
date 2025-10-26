@@ -1,0 +1,6 @@
+project = "testing-476216"
+region = "us-central1"
+ip_restriction = "190.28.112.147/32"
+github_repo_owner = "arave19"
+github_repo_name = "test_gcp_admin"
+github_connection_name = "webapp-testing"
