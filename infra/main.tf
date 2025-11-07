@@ -32,36 +32,49 @@ resource "google_artifact_registry_repository" "docker_repo" {
 # para acceso público sin restricciones de IP ni LB
 # ---------------------------------------------
 
-# resource "google_compute_security_policy" "armor_policy" {
-#   project = var.project
-#   name = "block-ip-policy"
-#
-#   rule {
-#     action = "deny(403)"
-#     description = "Restricted ip address"
-#     priority = 1000
-#     match {
-#       versioned_expr = "SRC_IPS_V1"
-#       config {
-#         src_ip_ranges = [var.ip_restriction]
-#       }
-#     }
-#   }
-#
-#   rule {
-#     action = "allow"
-#     priority = 2147483647
-#     match {
-#       versioned_expr = "SRC_IPS_V1"
-#       config {
-#         src_ip_ranges = ["*"]
-#       }
-#     }
-#     description = "Default allow rule"
-#   }
-#
-#   depends_on = [google_project_service.compute]
-# }
+resource "google_compute_security_policy" "armor_policy" {
+  project = var.project
+  name    = "block-ip-policy"
+
+  rule {
+    action      = "allow"
+    description = "Allow Rave's IP"
+    priority    = 900
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["190.28.112.147/32"]
+      }
+    }
+  }
+
+  rule {
+    action      = "deny(403)"
+    description = "Restricted IP address"
+    priority    = 1000
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = [var.ip_restriction]
+      }
+    }
+  }
+
+  rule {
+    action      = "allow"
+    description = "Default allow rule"
+    priority    = 2147483647
+    match {
+      versioned_expr = "SRC_IPS_V1"
+      config {
+        src_ip_ranges = ["*"]
+      }
+    }
+  }
+
+  depends_on = [google_project_service.compute]
+}
+
 #
 # resource "google_compute_region_network_endpoint_group" "cloud_run_neg" {
 #   name                  = "cloud-run-neg"
