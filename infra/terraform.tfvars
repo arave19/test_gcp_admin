@@ -1,4 +1,4 @@
-project = "testing-476216"
+project = "aravel-344022"
 region = "us-central1"
 ip_restriction = "190.28.112.147/32"
 github_repo_owner = "arave19"
